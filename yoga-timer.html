@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Yoga Audio Timer</title>
+<style>
+  body { 
+    font-family: Arial, sans-serif; 
+    text-align: center; 
+    padding-top: 50px; 
+    background-color: #e8f5e9; 
+    color: #2e7d32;
+  }
+  h1 { font-size: 28px; margin-bottom: 5px; }
+  #status { font-size: 24px; font-weight: bold; margin-top: 20px; color: #555; }
+  #timer { font-size: 80px; font-weight: bold; margin: 20px 0; color: #1b5e20; }
+  button { 
+    padding: 15px 40px; 
+    font-size: 22px; 
+    margin: 10px; 
+    cursor: pointer; 
+    border-radius: 12px; 
+    border: none; 
+    color: white; 
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  }
+  #startBtn { background-color: #4CAF50; }
+  #startBtn:active { background-color: #388E3C; }
+  #stopBtn { background-color: #f44336; }
+  #stopBtn:active { background-color: #d32f2f; }
+</style>
+</head>
+<body>
+
+  <h1>Yoga Audio Timer</h1>
+  <div id="status">Ready to Start</div>
+  <div id="timer">00:00</div>
+  
+  <button id="startBtn" onclick="startTimer()">Start</button>
+  <button id="stopBtn" onclick="stopTimer()">Stop</button>
+
+  <script>
+    let interval;
+    let timeLeft = 0;
+    let isYogaMode = true; // true = 2 mins yoga, false = 1 min rest
+
+    // Voice setup
+    function speak(text) {
+      // Cancels any currently speaking voice so they don't overlap
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      // You can change the language/accent if you want, default is system language
+      window.speechSynthesis.speak(utterance);
+    }
+
+    function updateDisplay() {
+      const mins = Math.floor(timeLeft / 60);
+      const secs = timeLeft % 60;
+      document.getElementById('timer').innerText = 
+        (mins < 10 ? '0' : '') + mins + ':' + (secs < 10 ? '0' : '') + secs;
+    }
+
+    function startTimer() {
+      stopTimer(); // Clear existing timers just in case
+      isYogaMode = true;
+      timeLeft = 120; // 120 seconds = 2 minutes
+      
+      document.getElementById('status').innerText = "🧘‍♂️ Yoga Time!";
+      updateDisplay();
+      
+      // Speak immediately on button press
+      speak("Start yoga.");
+
+      interval = setInterval(() => {
+        timeLeft--;
+        
+        if (timeLeft <= 0) {
+          if (isYogaMode) {
+            // Shift to Rest Mode
+            isYogaMode = false;
+            timeLeft = 60; // 60 seconds = 1 minute
+            document.getElementById('status').innerText = "⏸️ Rest Time";
+            speak("Stop. Rest for 1 minute.");
+          } else {
+            // Shift to Yoga Mode
+            isYogaMode = true;
+            timeLeft = 120; // Back to 2 minutes
+            document.getElementById('status').innerText = "🧘‍♂️ Yoga Time!";
+            speak("Start yoga.");
+          }
+        }
+        updateDisplay();
+      }, 1000); // 1000 milliseconds = 1 second
+    }
+
+    function stopTimer() {
+      clearInterval(interval);
+      document.getElementById('status').innerText = "Stopped";
+      document.getElementById('timer').innerText = "00:00";
+      window.speechSynthesis.cancel(); 
+    }
+  </script>
+</body>
+</html>
